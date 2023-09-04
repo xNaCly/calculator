@@ -3,12 +3,12 @@ package main
 import (
 	"bufio"
 	"io"
+	"log"
 	"strings"
 )
 
 const (
 	UNKNOWN = iota + 1
-	LABEL
 	NUMBER
 	PLUS
 	MINUS
@@ -19,7 +19,6 @@ const (
 
 var TOKEN_LOOKUP = map[int]string{
 	UNKNOWN:  "UNKNOWN",
-	LABEL:    "LABEL",
 	NUMBER:   "NUMBER",
 	PLUS:     "PLUS",
 	MINUS:    "MINUS",
@@ -80,6 +79,8 @@ func (l *Lexer) Lex() []Token {
 				Type: ttype,
 				Raw:  string(l.cur),
 			})
+		} else {
+			log.Fatalf("unknown %q in input", l.cur)
 		}
 
 		l.advance()
