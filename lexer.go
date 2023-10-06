@@ -9,22 +9,32 @@ import (
 
 const (
 	UNKNOWN = iota + 1
+
 	NUMBER
 	PLUS
 	MINUS
 	ASTERISK
 	SLASH
+
+	BRACE_LEFT
+	BRACE_RIGHT
+
 	EOF
 )
 
+// for debugging
 var TOKEN_LOOKUP = map[int]string{
-	UNKNOWN:  "UNKNOWN",
+	UNKNOWN: "UNKNOWN",
+
 	NUMBER:   "NUMBER",
 	PLUS:     "PLUS",
 	MINUS:    "MINUS",
 	ASTERISK: "ASTERISK",
 	SLASH:    "SLASH",
-	EOF:      "EOF",
+
+	BRACE_LEFT:  "BRACE_LEFT",
+	BRACE_RIGHT: "BRACE_RIGHT",
+	EOF:         "EOF",
 }
 
 type Token struct {
@@ -45,6 +55,7 @@ func NewLexer(reader io.Reader) *Lexer {
 	return l
 }
 
+// transform list of characters to list of tokens
 func (l *Lexer) Lex() []Token {
 	t := make([]Token, 0)
 	for l.cur != 0 {
@@ -67,6 +78,10 @@ func (l *Lexer) Lex() []Token {
 			ttype = SLASH
 		case '*':
 			ttype = ASTERISK
+		case '(':
+			ttype = BRACE_LEFT
+		case ')':
+			ttype = BRACE_RIGHT
 		default:
 			if (l.cur > '0' && l.cur < '9') || l.cur == '.' {
 				t = append(t, l.number())
@@ -92,9 +107,10 @@ func (l *Lexer) Lex() []Token {
 	return t
 }
 
+// advances until cur char is no longer [0-9\._e], returns token with list of matching chars
 func (l *Lexer) number() Token {
 	b := strings.Builder{}
-	for (l.cur > '0' && l.cur < '9') || l.cur == '.' || l.cur == '_' {
+	for (l.cur > '0' && l.cur < '9') || l.cur == '.' || l.cur == '_' || l.cur == 'e' {
 		b.WriteRune(l.cur)
 		l.advance()
 	}
@@ -104,6 +120,7 @@ func (l *Lexer) number() Token {
 	}
 }
 
+// advance to the next character
 func (l *Lexer) advance() {
 	r, _, err := l.scanner.ReadRune()
 	if err != nil {
