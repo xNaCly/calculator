@@ -13,6 +13,14 @@ func TestVm(t *testing.T) {
 		exp  float64
 	}{
 		{
+			name: "inspect",
+			ops: []Operation{
+				{OP_INSPECT, 1},
+				{OP_END, 0},
+			},
+			exp: 0,
+		},
+		{
 			name: "nop",
 			ops: []Operation{
 				{OP_NOP, 0},

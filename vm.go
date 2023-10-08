@@ -5,21 +5,6 @@ import (
 	"log"
 )
 
-// Contains the virtual machine used for executing the calculators byte code.
-//
-// Register overview:
-//
-//   - 0: reserved for results of operations, loading data
-//   - 1-3: free for use
-//
-// Example:
-//
-//   - LOAD    51      ; loads the numeric value 51 into register 0
-//   - STORE   1       ; moves the value stored in register 0 in register 1, sets register 0 to 0
-//   - LOAD    12      ; loads the numeric value 12 into register 0
-//   - ADD     1       ; adds register 0 and register 1 together, assigns result to register 0
-//   - INSPECT 0       ; prints the register 0s value
-
 // represents an operation the vm performs
 type OpCode uint8
 
@@ -53,17 +38,21 @@ type Operation struct {
 	Arg  float64 // operation argument
 }
 
+// max amount of registers in virtual machine
+const REGISTER_COUNT int = 4
+
 type Vm struct {
-	reg   [4]float64  // registers
-	in    []Operation // operations to execute
-	pos   int         // current position in input
-	trace bool        // prints every operation if enabled
+	reg   [REGISTER_COUNT]float64 // registers
+	in    []Operation             // operations to execute
+	pos   int                     // current position in input
+	trace bool                    // prints every operation if enabled
 }
 
+// assigns new input to the vm, resets its state
 func (vm *Vm) NewVmIn(in []Operation) *Vm {
 	vm.pos = 0
 	vm.in = in
-	vm.reg = [4]float64{0, 0, 0, 0}
+	vm.reg = [REGISTER_COUNT]float64{}
 	return vm
 }
 
@@ -80,9 +69,9 @@ func (vm *Vm) cur() Operation {
 }
 
 // checks if index is in register boundary, converts to int, returns
-func (vm *Vm) regBoundCheck(index float64) int {
+func regBoundCheck(index float64) int {
 	i := int(index)
-	if i < 0 || i > len(vm.reg) {
+	if i < 0 || i > REGISTER_COUNT {
 		log.Panicf("vm: Out of bounds register access for %d", i)
 	}
 	return i
@@ -91,9 +80,8 @@ func (vm *Vm) regBoundCheck(index float64) int {
 func (vm *Vm) Execute() {
 	for {
 		cur := vm.cur()
-
 		if vm.trace {
-			fmt.Printf("vm: %10s :: %f\n", OP_LOOKUP[vm.cur().Code], vm.cur().Arg)
+			fmt.Printf("vm: %10s :: %f\n", OP_LOOKUP[cur.Code], cur.Arg)
 		}
 
 		if cur.Code == OP_END {
@@ -105,23 +93,23 @@ func (vm *Vm) Execute() {
 		case OP_LOAD:
 			vm.reg[0] = cur.Arg
 		case OP_STORE:
-			i := vm.regBoundCheck(cur.Arg)
+			i := regBoundCheck(cur.Arg)
 			vm.reg[i] = vm.reg[0]
 			vm.reg[0] = 0
 		case OP_INSPECT:
-			i := vm.regBoundCheck(cur.Arg)
+			i := regBoundCheck(cur.Arg)
 			fmt.Printf("vm: %10s :: reg[%d] => %f\n", "INSPECT", i, vm.reg[i])
 		case OP_ADD:
-			i := vm.regBoundCheck(cur.Arg)
+			i := regBoundCheck(cur.Arg)
 			vm.reg[0] = vm.reg[i] + vm.reg[0]
 		case OP_SUBTRACT:
-			i := vm.regBoundCheck(cur.Arg)
+			i := regBoundCheck(cur.Arg)
 			vm.reg[0] = vm.reg[i] - vm.reg[0]
 		case OP_MULTIPY:
-			i := vm.regBoundCheck(cur.Arg)
+			i := regBoundCheck(cur.Arg)
 			vm.reg[0] = vm.reg[i] * vm.reg[0]
 		case OP_DIVIDE:
-			i := vm.regBoundCheck(cur.Arg)
+			i := regBoundCheck(cur.Arg)
 			vm.reg[0] = vm.reg[i] / vm.reg[0]
 		default:
 			log.Panicf("Unkown operator %v", OP_LOOKUP[cur.Code])
