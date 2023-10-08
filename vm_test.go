@@ -40,7 +40,7 @@ func TestVm(t *testing.T) {
 				{OP_SUBTRACT, 1},
 				{OP_END, 0},
 			},
-			exp: -4,
+			exp: 4,
 		},
 		{
 			name: "multiplication",
@@ -56,9 +56,9 @@ func TestVm(t *testing.T) {
 		{
 			name: "division",
 			ops: []Operation{
-				{OP_LOAD, 2},
-				{OP_STORE, 1},
 				{OP_LOAD, 25},
+				{OP_STORE, 1},
+				{OP_LOAD, 2},
 				{OP_DIVIDE, 1},
 				{OP_END, 0},
 			},

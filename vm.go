@@ -113,16 +113,16 @@ func (vm *Vm) Execute() {
 			fmt.Printf("vm: %10s :: reg[%d] => %f\n", "INSPECT", i, vm.reg[i])
 		case OP_ADD:
 			i := vm.regBoundCheck(cur.Arg)
-			vm.reg[0] = vm.reg[0] + vm.reg[i]
+			vm.reg[0] = vm.reg[i] + vm.reg[0]
 		case OP_SUBTRACT:
 			i := vm.regBoundCheck(cur.Arg)
-			vm.reg[0] = vm.reg[0] - vm.reg[i]
+			vm.reg[0] = vm.reg[i] - vm.reg[0]
 		case OP_MULTIPY:
 			i := vm.regBoundCheck(cur.Arg)
-			vm.reg[0] = vm.reg[0] * vm.reg[i]
+			vm.reg[0] = vm.reg[i] * vm.reg[0]
 		case OP_DIVIDE:
 			i := vm.regBoundCheck(cur.Arg)
-			vm.reg[0] = vm.reg[0] / vm.reg[i]
+			vm.reg[0] = vm.reg[i] / vm.reg[0]
 		default:
 			log.Panicf("Unkown operator %v", OP_LOOKUP[cur.Code])
 		}
