@@ -104,9 +104,22 @@ func TestEval(t *testing.T) {
 			},
 			out: 66,
 		},
+		{
+			name: "readme example",
+			in: []Node{
+				&Addition{
+					left: &Multiplication{
+						left:  &Number{token: Token{Raw: "2"}},
+						right: &Number{token: Token{Raw: "1"}},
+					},
+					right: &Number{token: Token{Raw: "2"}},
+				},
+			},
+			out: 4,
+		},
 	}
 
-	vm := Vm{}
+	vm := Vm{trace: true}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			vm.NewVmIn(Compile(test.in)).Execute()

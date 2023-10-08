@@ -5,6 +5,5 @@ func Compile(n []Node) []Operation {
 	for _, c := range n {
 		r = append(r, c.Compile()...)
 	}
-	r = append(r, Operation{OP_END, 0})
 	return r
 }

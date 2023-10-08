@@ -1,6 +1,6 @@
 # Calculator
 
-Simple educational calculator with lexer, parser and bytecode vm 
+Simple educational calculator with lexer, parser and bytecode vm
 
 This project is meant for explaining concepts used when interpreting programming languages, therefore containing
 concepts such as:
@@ -54,7 +54,7 @@ no input given
 $ ./calc "1+1"
 ```
 
-The last command supplies `calc` with `1+1` and promptly executes the expression:
+The last command supplies `calc` with `2+1*2` and promptly executes the expression:
 
 ```
 $ ./calc "2+1*2"
@@ -71,9 +71,29 @@ index |            type |             raw
     2
     1
   2
+OP_LOAD    :: 2.000000
+OP_STORE   :: 1.000000
+OP_LOAD    :: 1.000000
+OP_MULTIPY :: 1.000000
+OP_STORE   :: 1.000000
+OP_LOAD    :: 2.000000
+OP_ADD     :: 1.000000
 => 4
 ```
 
 The first output is the tokens generated with the lexical analysis, the second
-output is the abstract syntax tree the parser build and the last output is the
-resulting number.
+output is the abstract syntax tree the parser builds, in the third part the
+steps the virtual machine takes are traced to execute the expression. The last
+output is the resulting number.
+
+### Evaluation of Expressions - Interpreter
+
+#### Attaching meaning to characters - Lexical Analysis
+
+#### Building an Abstract syntax tree - Parsing
+
+#### Thinking about Bytes - Bytecode
+
+#### Flattening the Abstract syntax tree - Compilation
+
+#### Executing bytecode in a virtual machine - Bytecode vm
