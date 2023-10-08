@@ -1,10 +1,9 @@
 # Calculator
 
-Simple calculator translating input expressions into their results, supporting
-computations and comments.
+Simple educational calculator with lexer, parser and bytecode vm 
 
-This project is meant for explanation of an interpreter, therefore containing
-explanations for concepts such as:
+This project is meant for explaining concepts used when interpreting programming languages, therefore containing
+concepts such as:
 
 - tokenizing characters to tokens
 - parsing tokens to a abstract syntax tree
