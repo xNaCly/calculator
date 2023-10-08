@@ -2,12 +2,13 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"strconv"
 	"strings"
 )
 
 type Node interface {
-	Eval() float64
+	Compile() []Operation
 	String(ident int) string
 }
 
@@ -15,12 +16,12 @@ type Number struct {
 	token Token
 }
 
-func (n *Number) Eval() float64 {
+func (n *Number) Compile() []Operation {
 	val, err := strconv.ParseFloat(n.token.Raw, 64)
 	if err != nil {
-		panic(err)
+		log.Panicf("compile: failed to parse float: %q", err)
 	}
-	return val
+	return []Operation{{OP_LOAD, val}}
 }
 
 func (n *Number) String(ident int) string {
@@ -33,10 +34,12 @@ type Addition struct {
 	right Node
 }
 
-func (a *Addition) Eval() float64 {
-	left := a.left.Eval()
-	right := a.right.Eval()
-	return left + right
+func (a *Addition) Compile() []Operation {
+	op := a.left.Compile()
+	op = append(op, Operation{OP_STORE, 1})
+	op = append(op, a.right.Compile()...)
+	op = append(op, Operation{OP_ADD, 1})
+	return op
 }
 
 func (a *Addition) String(ident int) string {
@@ -50,10 +53,12 @@ type Subtraction struct {
 	right Node
 }
 
-func (s *Subtraction) Eval() float64 {
-	left := s.left.Eval()
-	right := s.right.Eval()
-	return left - right
+func (s *Subtraction) Compile() []Operation {
+	op := s.left.Compile()
+	op = append(op, Operation{OP_STORE, 1})
+	op = append(op, s.right.Compile()...)
+	op = append(op, Operation{OP_SUBTRACT, 1})
+	return op
 }
 
 func (s *Subtraction) String(ident int) string {
@@ -67,10 +72,12 @@ type Multiplication struct {
 	right Node
 }
 
-func (m *Multiplication) Eval() float64 {
-	left := m.left.Eval()
-	right := m.right.Eval()
-	return left * right
+func (m *Multiplication) Compile() []Operation {
+	op := m.left.Compile()
+	op = append(op, Operation{OP_STORE, 1})
+	op = append(op, m.right.Compile()...)
+	op = append(op, Operation{OP_MULTIPY, 1})
+	return op
 }
 func (m *Multiplication) String(ident int) string {
 	identStr := strings.Repeat(" ", ident)
@@ -83,10 +90,12 @@ type Division struct {
 	right Node
 }
 
-func (d *Division) Eval() float64 {
-	left := d.left.Eval()
-	right := d.right.Eval()
-	return left / right
+func (d *Division) Compile() []Operation {
+	op := d.left.Compile()
+	op = append(op, Operation{OP_STORE, 1})
+	op = append(op, d.right.Compile()...)
+	op = append(op, Operation{OP_DIVIDE, 1})
+	return op
 }
 
 func (d *Division) String(ident int) string {

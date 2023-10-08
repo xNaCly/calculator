@@ -30,26 +30,35 @@ func main() {
 	if len(input) == 0 {
 		log.Fatalln("no input")
 	}
+
 	lexer := NewLexer(strings.NewReader(input))
 	token := lexer.Lex()
+
 	if len(token) == 1 {
 		log.Fatalln("only got EOF, probably an error? ig?")
 	}
+
 	debugToken(token)
-	ast := []Node{
-		&Addition{
-			left: &Multiplication{
-				left:  &Number{token: Token{Raw: "2"}},
-				right: &Number{token: Token{Raw: "1"}},
-			},
-			right: &Number{token: Token{Raw: "2"}},
-		},
-	}
-	// parser := NewParser(token)
-	// ast := parser.Parse()
-	// if len(ast) == 0 {
-	// 	log.Fatalln("parsing error, i think :^)")
+
+	// ast := []Node{
+	// 	&Addition{
+	// 		left: &Multiplication{
+	// 			left:  &Number{token: Token{Raw: "2"}},
+	// 			right: &Number{token: Token{Raw: "1"}},
+	// 		},
+	// 		right: &Number{token: Token{Raw: "2"}},
+	// 	},
 	// }
+
+	parser := NewParser(token)
+	ast := parser.Parse()
+	if len(ast) == 0 {
+		log.Fatalln("parsing error, i think :^)")
+	}
+
 	debugAst(ast)
-	Eval(ast)
+
+	byteCode := Compile(ast)
+	vm := Vm{trace: true}
+	vm.NewVmIn(byteCode).Execute()
 }

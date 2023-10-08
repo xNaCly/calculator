@@ -8,33 +8,31 @@ import (
 )
 
 const (
-	UNKNOWN = iota + 1
+	TOKEN_UNKNOWN = iota + 1
 
-	NUMBER
-	PLUS
-	MINUS
-	ASTERISK
-	SLASH
+	TOKEN_NUMBER
+	TOKEN_PLUS
+	TOKEN_MINUS
+	TOKEN_ASTERISK
+	TOKEN_SLASH
 
-	BRACE_LEFT
-	BRACE_RIGHT
+	TOKEN_BRACE_LEFT
+	TOKEN_BRACE_RIGHT
 
-	EOF
+	TOKEN_EOF
 )
 
 // for debugging
 var TOKEN_LOOKUP = map[int]string{
-	UNKNOWN: "UNKNOWN",
-
-	NUMBER:   "NUMBER",
-	PLUS:     "PLUS",
-	MINUS:    "MINUS",
-	ASTERISK: "ASTERISK",
-	SLASH:    "SLASH",
-
-	BRACE_LEFT:  "BRACE_LEFT",
-	BRACE_RIGHT: "BRACE_RIGHT",
-	EOF:         "EOF",
+	TOKEN_UNKNOWN:     "UNKNOWN",
+	TOKEN_NUMBER:      "TOKEN_NUMBER",
+	TOKEN_PLUS:        "TOKEN_PLUS",
+	TOKEN_MINUS:       "TOKEN_MINUS",
+	TOKEN_ASTERISK:    "TOKEN_ASTERISK",
+	TOKEN_SLASH:       "TOKEN_SLASH",
+	TOKEN_BRACE_LEFT:  "TOKEN_BRACE_LEFT",
+	TOKEN_BRACE_RIGHT: "TOKEN_BRACE_RIGHT",
+	TOKEN_EOF:         "EOF",
 }
 
 type Token struct {
@@ -59,7 +57,7 @@ func NewLexer(reader io.Reader) *Lexer {
 func (l *Lexer) Lex() []Token {
 	t := make([]Token, 0)
 	for l.cur != 0 {
-		ttype := UNKNOWN
+		ttype := TOKEN_UNKNOWN
 
 		switch l.cur {
 		case '#':
@@ -71,17 +69,17 @@ func (l *Lexer) Lex() []Token {
 			l.advance()
 			continue
 		case '+':
-			ttype = PLUS
+			ttype = TOKEN_PLUS
 		case '-':
-			ttype = MINUS
+			ttype = TOKEN_MINUS
 		case '/':
-			ttype = SLASH
+			ttype = TOKEN_SLASH
 		case '*':
-			ttype = ASTERISK
+			ttype = TOKEN_ASTERISK
 		case '(':
-			ttype = BRACE_LEFT
+			ttype = TOKEN_BRACE_LEFT
 		case ')':
-			ttype = BRACE_RIGHT
+			ttype = TOKEN_BRACE_RIGHT
 		default:
 			if (l.cur > '0' && l.cur < '9') || l.cur == '.' {
 				t = append(t, l.number())
@@ -89,7 +87,7 @@ func (l *Lexer) Lex() []Token {
 			}
 		}
 
-		if ttype != UNKNOWN {
+		if ttype != TOKEN_UNKNOWN {
 			t = append(t, Token{
 				Type: ttype,
 				Raw:  string(l.cur),
@@ -101,8 +99,8 @@ func (l *Lexer) Lex() []Token {
 		l.advance()
 	}
 	t = append(t, Token{
-		Type: EOF,
-		Raw:  "EOF",
+		Type: TOKEN_EOF,
+		Raw:  "TOKEN_EOF",
 	})
 	return t
 }
@@ -116,7 +114,7 @@ func (l *Lexer) number() Token {
 	}
 	return Token{
 		Raw:  b.String(),
-		Type: NUMBER,
+		Type: TOKEN_NUMBER,
 	}
 }
 

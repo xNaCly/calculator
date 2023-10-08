@@ -1,8 +1,10 @@
+package main
+
+// Grammar:
 // Expression   -> Expression + Term | Expression - Term | Term
 // Term         -> Term * Factor | Term / Factor | Factor
 // Factor       -> Number | ( Expression )
 // Number       -> [0-9e_.]
-package main
 
 type Parser struct {
 	token []Token
@@ -20,7 +22,7 @@ func NewParser(token []Token) *Parser {
 
 func (p *Parser) Parse() []Node {
 	r := make([]Node, 0)
-	for p.peek().Type != EOF {
+	for p.peek().Type != TOKEN_EOF {
 		p.advance()
 	}
 	return r
@@ -33,7 +35,7 @@ func (p *Parser) peek() Token {
 
 // advance cursor to the next token in the input
 func (p *Parser) advance() {
-	if p.peek().Type != EOF {
+	if p.peek().Type != TOKEN_EOF {
 		p.pos++
 	}
 }
