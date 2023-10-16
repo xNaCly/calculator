@@ -119,7 +119,7 @@ func TestEval(t *testing.T) {
 		},
 	}
 
-	vm := Vm{trace: true}
+	vm := Vm{trace: false}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			vm.NewVmIn(Compile(test.in)).Execute()

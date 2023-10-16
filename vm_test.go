@@ -67,7 +67,7 @@ func TestVm(t *testing.T) {
 			exp: 12.5,
 		},
 	}
-	v := Vm{trace: true}
+	v := Vm{trace: false}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			v.NewVmIn(test.ops)

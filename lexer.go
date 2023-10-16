@@ -81,7 +81,7 @@ func (l *Lexer) Lex() []Token {
 		case ')':
 			ttype = TOKEN_BRACE_RIGHT
 		default:
-			if (l.cur > '0' && l.cur < '9') || l.cur == '.' {
+			if (l.cur >= '0' && l.cur <= '9') || l.cur == '.' {
 				t = append(t, l.number())
 				continue
 			}
@@ -108,7 +108,7 @@ func (l *Lexer) Lex() []Token {
 // advances until cur char is no longer [0-9\._e], returns token with list of matching chars
 func (l *Lexer) number() Token {
 	b := strings.Builder{}
-	for (l.cur > '0' && l.cur < '9') || l.cur == '.' || l.cur == '_' || l.cur == 'e' {
+	for (l.cur >= '0' && l.cur <= '9') || l.cur == '.' || l.cur == '_' || l.cur == 'e' {
 		b.WriteRune(l.cur)
 		l.advance()
 	}
