@@ -85,15 +85,3 @@ The first output is the tokens generated with the lexical analysis, the second
 output is the abstract syntax tree the parser builds, in the third part the
 steps the virtual machine takes are traced to execute the expression. The last
 output is the resulting number.
-
-### Evaluation of Expressions - Interpreter
-
-#### Attaching meaning to characters - Lexical Analysis
-
-#### Building an Abstract syntax tree - Parsing
-
-#### Thinking about Bytes - Bytecode
-
-#### Flattening the Abstract syntax tree - Compilation
-
-#### Executing bytecode in a virtual machine - Bytecode vm
