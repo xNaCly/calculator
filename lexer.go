@@ -61,7 +61,7 @@ func (l *Lexer) Lex() []Token {
 
 		switch l.cur {
 		case '#':
-			for l.cur != '\n' {
+			for l.cur != '\n' && l.cur != 0 {
 				l.advance()
 			}
 			continue
