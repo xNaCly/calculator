@@ -1,23 +1,12 @@
 package main
 
 import (
+	"fmt"
 	"strings"
 	"testing"
-)
 
-func compareSlices[T comparable](t *testing.T, a []T, b []T) {
-	if len(a) != len(b) {
-		goto err
-	}
-	for i, e := range a {
-		if e != b[i] {
-			goto err
-		}
-	}
-	return
-err: // i know we are all goto haters, but i cant be assed to write this 3 times for tests :^)
-	t.Errorf("%v != %v", a, b)
-}
+	"github.com/stretchr/testify/assert"
+)
 
 func TestLexer(t *testing.T) {
 	tests := []struct {
@@ -113,7 +102,7 @@ func TestLexer(t *testing.T) {
 		t.Run(test.Name, func(t *testing.T) {
 			in := strings.NewReader(test.In)
 			out := NewLexer(in).Lex()
-			compareSlices(t, out, test.Out)
+			assert.EqualValues(t, test.Out, out)
 		})
 	}
 }

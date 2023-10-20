@@ -16,7 +16,7 @@ func debugToken(token []Token) {
 
 func debugAst(ast []Node) {
 	for _, c := range ast {
-		fmt.Println(c.String(0))
+		log.Println(c.String(0))
 	}
 }
 
