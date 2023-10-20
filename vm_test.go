@@ -66,7 +66,21 @@ func TestVm(t *testing.T) {
 			},
 			exp: 12.5,
 		},
+		{
+			name: "2+1*1",
+			ops: []Operation{
+				{OP_LOAD, 1},
+				{OP_STORE, 1},
+				{OP_LOAD, 1},
+				{OP_MULTIPY, 1},
+				{OP_STORE, 1},
+				{OP_LOAD, 2},
+				{OP_ADD, 1},
+			},
+			exp: 3,
+		},
 	}
+
 	v := Vm{trace: false}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {

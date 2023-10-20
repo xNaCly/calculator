@@ -2,7 +2,10 @@ package main
 
 import (
 	"math"
+	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 // from https://github.com/xNaCly/statlib/blob/master/distributions/dist.go
@@ -71,7 +74,7 @@ func TestEval(t *testing.T) {
 					right: &Number{token: Token{Raw: "1"}},
 				},
 			},
-			out: 4.075,
+			out: 4.074999999999999,
 		},
 		{
 			name: "2*2+2",
@@ -146,9 +149,32 @@ func TestEval(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			vm.NewVmIn(Compile(test.in)).Execute()
-			if !compareFloats(vm.reg[0], test.out) {
-				t.Errorf("execution did not yield the correct result, wanted %.10f, got %.10f\n", test.out, vm.reg[0])
-			}
+			assert.Equal(t, test.out, vm.reg[0])
+		})
+	}
+}
+
+func TestCompile(t *testing.T) {
+	tests := []struct {
+		In  string
+		Out []Operation
+	}{
+		// BUG: 2+1*1 somehow does not really work? parser error? compiler error?
+		// {In: "2+1*1", Out: []Operation{
+		// 	{OP_LOAD, 1},
+		// 	{OP_STORE, 1},
+		// 	{OP_LOAD, 1},
+		// 	{OP_MULTIPY, 1},
+		// 	{OP_STORE, 1},
+		// 	{OP_LOAD, 2},
+		// 	{OP_ADD, 1},
+		// }},
+	}
+	for _, test := range tests {
+		t.Run(test.In, func(t *testing.T) {
+			token := NewLexer(strings.NewReader(test.In)).Lex()
+			ast := NewParser(token).Parse()
+			assert.EqualValues(t, test.Out, Compile(ast))
 		})
 	}
 }
