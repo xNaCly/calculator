@@ -7,11 +7,30 @@ import (
 	"strings"
 )
 
-func getRegister() float64 {
-	t := CUR_REG
-	CUR_REG = CUR_REG + 1
-	return t
+type RegisterAllocator struct {
+	registers [REGISTER_COUNT]bool
 }
+
+func (r *RegisterAllocator) alloc() float64 {
+	for i, v := range r.registers {
+		if v == false {
+			r.registers[i] = true
+			return float64(i + 1)
+		}
+	}
+	panic("Out of bounds, no more free registers")
+}
+
+func (r *RegisterAllocator) dealloc(index float64) {
+	i := int(index)
+	if r.registers[i-1] {
+		r.registers[i-1] = false
+	} else {
+		panic("Register not previously occupied")
+	}
+}
+
+var Allocator RegisterAllocator
 
 type Node interface {
 	Compile() []Operation
@@ -42,10 +61,11 @@ type Addition struct {
 
 func (a *Addition) Compile() []Operation {
 	op := a.left.Compile()
-	r := getRegister()
-	op = append(op, Operation{OP_STORE, r})
+	i := Allocator.alloc()
+	defer Allocator.dealloc(i)
+	op = append(op, Operation{OP_STORE, i})
 	op = append(op, a.right.Compile()...)
-	op = append(op, Operation{OP_ADD, r})
+	op = append(op, Operation{OP_ADD, i})
 	return op
 }
 
@@ -62,10 +82,11 @@ type Subtraction struct {
 
 func (s *Subtraction) Compile() []Operation {
 	op := s.left.Compile()
-	r := getRegister()
-	op = append(op, Operation{OP_STORE, r})
+	i := Allocator.alloc()
+	defer Allocator.dealloc(i)
+	op = append(op, Operation{OP_STORE, i})
 	op = append(op, s.right.Compile()...)
-	op = append(op, Operation{OP_SUBTRACT, r})
+	op = append(op, Operation{OP_SUBTRACT, i})
 	return op
 }
 
@@ -82,10 +103,11 @@ type Multiplication struct {
 
 func (m *Multiplication) Compile() []Operation {
 	op := m.left.Compile()
-	r := getRegister()
-	op = append(op, Operation{OP_STORE, r})
+	i := Allocator.alloc()
+	defer Allocator.dealloc(i)
+	op = append(op, Operation{OP_STORE, i})
 	op = append(op, m.right.Compile()...)
-	op = append(op, Operation{OP_MULTIPY, r})
+	op = append(op, Operation{OP_MULTIPY, i})
 	return op
 }
 func (m *Multiplication) String(ident int) string {
@@ -101,10 +123,11 @@ type Division struct {
 
 func (d *Division) Compile() []Operation {
 	op := d.left.Compile()
-	r := getRegister()
-	op = append(op, Operation{OP_STORE, r})
+	i := Allocator.alloc()
+	defer Allocator.dealloc(i)
+	op = append(op, Operation{OP_STORE, i})
 	op = append(op, d.right.Compile()...)
-	op = append(op, Operation{OP_DIVIDE, r})
+	op = append(op, Operation{OP_DIVIDE, i})
 	return op
 }
 

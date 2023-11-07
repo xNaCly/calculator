@@ -159,16 +159,15 @@ func TestCompile(t *testing.T) {
 		In  string
 		Out []Operation
 	}{
-		// BUG: 2+1*1 somehow does not really work? parser error? compiler error?
-		// {In: "2+1*1", Out: []Operation{
-		// 	{OP_LOAD, 1},
-		// 	{OP_STORE, 1},
-		// 	{OP_LOAD, 1},
-		// 	{OP_MULTIPY, 1},
-		// 	{OP_STORE, 1},
-		// 	{OP_LOAD, 2},
-		// 	{OP_ADD, 1},
-		// }},
+		{In: "2+1*1", Out: []Operation{
+			{OP_LOAD, 2},
+			{OP_STORE, 1},
+			{OP_LOAD, 1},
+			{OP_STORE, 2},
+			{OP_LOAD, 1},
+			{OP_MULTIPY, 2},
+			{OP_ADD, 1},
+		}},
 	}
 	for _, test := range tests {
 		t.Run(test.In, func(t *testing.T) {
