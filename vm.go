@@ -37,7 +37,9 @@ type Operation struct {
 }
 
 // max amount of registers in virtual machine
-const REGISTER_COUNT int = 4
+const REGISTER_COUNT int = 128
+
+var CUR_REG float64 = 1
 
 // The virtual machine (VM) is a way to simulate the inner workings of a processor.
 //

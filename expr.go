@@ -7,6 +7,12 @@ import (
 	"strings"
 )
 
+func getRegister() float64 {
+	t := CUR_REG
+	CUR_REG = CUR_REG + 1
+	return t
+}
+
 type Node interface {
 	Compile() []Operation
 	String(ident int) string
@@ -36,9 +42,10 @@ type Addition struct {
 
 func (a *Addition) Compile() []Operation {
 	op := a.left.Compile()
-	op = append(op, Operation{OP_STORE, 1})
+	r := getRegister()
+	op = append(op, Operation{OP_STORE, r})
 	op = append(op, a.right.Compile()...)
-	op = append(op, Operation{OP_ADD, 1})
+	op = append(op, Operation{OP_ADD, r})
 	return op
 }
 
@@ -55,9 +62,10 @@ type Subtraction struct {
 
 func (s *Subtraction) Compile() []Operation {
 	op := s.left.Compile()
-	op = append(op, Operation{OP_STORE, 1})
+	r := getRegister()
+	op = append(op, Operation{OP_STORE, r})
 	op = append(op, s.right.Compile()...)
-	op = append(op, Operation{OP_SUBTRACT, 1})
+	op = append(op, Operation{OP_SUBTRACT, r})
 	return op
 }
 
@@ -74,9 +82,10 @@ type Multiplication struct {
 
 func (m *Multiplication) Compile() []Operation {
 	op := m.left.Compile()
-	op = append(op, Operation{OP_STORE, 1})
+	r := getRegister()
+	op = append(op, Operation{OP_STORE, r})
 	op = append(op, m.right.Compile()...)
-	op = append(op, Operation{OP_MULTIPY, 1})
+	op = append(op, Operation{OP_MULTIPY, r})
 	return op
 }
 func (m *Multiplication) String(ident int) string {
@@ -92,9 +101,10 @@ type Division struct {
 
 func (d *Division) Compile() []Operation {
 	op := d.left.Compile()
-	op = append(op, Operation{OP_STORE, 1})
+	r := getRegister()
+	op = append(op, Operation{OP_STORE, r})
 	op = append(op, d.right.Compile()...)
-	op = append(op, Operation{OP_DIVIDE, 1})
+	op = append(op, Operation{OP_DIVIDE, r})
 	return op
 }
 
