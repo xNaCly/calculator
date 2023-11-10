@@ -16,6 +16,7 @@ const (
 	OP_SUBTRACT        // subtracts the value of register0 from the value of the specified register, stores the result in register0
 	OP_MULTIPY         // multiplies the value of register0 with the value of the specified register, stores the result in register0
 	OP_DIVIDE          // divides the value of register0 by the value of the specified register, stores the result in register0
+	OP_NEG             // negates the value of register0, stores result in register0
 	OP_INSPECT         // prints the value of the given register
 )
 
@@ -27,6 +28,7 @@ var OP_LOOKUP = map[OpCode]string{
 	OP_SUBTRACT: "OP_SUBTRACT",
 	OP_MULTIPY:  "OP_MULTIPY",
 	OP_DIVIDE:   "OP_DIVIDE",
+	OP_NEG:      "OP_NEG",
 	OP_INSPECT:  "OP_INSPECT",
 }
 
@@ -63,6 +65,7 @@ var CUR_REG float64 = 1
 //   - OP_SUBTRACT <register>      ; subtracts the value of register 0 from the value at 'register', stores result in register 0
 //   - OP_MULTIPY  <register>      ; multiplies the value of register 0 with the value at 'register', stores result in register 0
 //   - OP_DIVIDE   <register>      ; divides the value of register 0 with the value at 'register', stores result in register 0
+//   - OP_NEG                      ; negates the value of register 0
 //   - OP_INSPECT  <register>      ; prints the value of 'register'
 //
 // All results operations such as OP_ADD generate are stored in register 0. The
@@ -116,20 +119,22 @@ func (vm *Vm) Execute() {
 	for !vm.atEnd {
 		cur := vm.cur()
 		if vm.trace {
-			fmt.Printf("%-10s :: %f\n", OP_LOOKUP[cur.Code], cur.Arg)
+			fmt.Printf("%-10s %f\n", OP_LOOKUP[cur.Code], cur.Arg)
 		}
 
 		switch cur.Code {
 		case OP_NOP:
 		case OP_LOAD:
 			vm.reg[0] = cur.Arg
+		case OP_NEG:
+			vm.reg[0] = -vm.reg[0]
 		case OP_STORE:
 			i := regBoundCheck(cur.Arg)
 			vm.reg[i] = vm.reg[0]
 			vm.reg[0] = 0
 		case OP_INSPECT:
 			i := regBoundCheck(cur.Arg)
-			fmt.Printf("vm: %10s :: reg[%d] => %f\n", "INSPECT", i, vm.reg[i])
+			fmt.Printf("vm: %7s reg[%d] => %f\n", "INSPECT", i, vm.reg[i])
 		case OP_ADD:
 			i := regBoundCheck(cur.Arg)
 			vm.reg[0] = vm.reg[i] + vm.reg[0]

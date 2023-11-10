@@ -60,13 +60,13 @@ type Addition struct {
 }
 
 func (a *Addition) Compile() []Operation {
-	op := a.left.Compile()
+	codes := a.left.Compile()
 	i := Allocator.alloc()
 	defer Allocator.dealloc(i)
-	op = append(op, Operation{OP_STORE, i})
-	op = append(op, a.right.Compile()...)
-	op = append(op, Operation{OP_ADD, i})
-	return op
+	codes = append(codes, Operation{OP_STORE, i})
+	codes = append(codes, a.right.Compile()...)
+	codes = append(codes, Operation{OP_ADD, i})
+	return codes
 }
 
 func (a *Addition) String(ident int) string {
@@ -81,13 +81,13 @@ type Subtraction struct {
 }
 
 func (s *Subtraction) Compile() []Operation {
-	op := s.left.Compile()
+	codes := s.left.Compile()
 	i := Allocator.alloc()
 	defer Allocator.dealloc(i)
-	op = append(op, Operation{OP_STORE, i})
-	op = append(op, s.right.Compile()...)
-	op = append(op, Operation{OP_SUBTRACT, i})
-	return op
+	codes = append(codes, Operation{OP_STORE, i})
+	codes = append(codes, s.right.Compile()...)
+	codes = append(codes, Operation{OP_SUBTRACT, i})
+	return codes
 }
 
 func (s *Subtraction) String(ident int) string {
@@ -102,13 +102,13 @@ type Multiplication struct {
 }
 
 func (m *Multiplication) Compile() []Operation {
-	op := m.left.Compile()
+	codes := m.left.Compile()
 	i := Allocator.alloc()
 	defer Allocator.dealloc(i)
-	op = append(op, Operation{OP_STORE, i})
-	op = append(op, m.right.Compile()...)
-	op = append(op, Operation{OP_MULTIPY, i})
-	return op
+	codes = append(codes, Operation{OP_STORE, i})
+	codes = append(codes, m.right.Compile()...)
+	codes = append(codes, Operation{OP_MULTIPY, i})
+	return codes
 }
 func (m *Multiplication) String(ident int) string {
 	identStr := strings.Repeat(" ", ident)
@@ -122,16 +122,32 @@ type Division struct {
 }
 
 func (d *Division) Compile() []Operation {
-	op := d.left.Compile()
+	codes := d.left.Compile()
 	i := Allocator.alloc()
 	defer Allocator.dealloc(i)
-	op = append(op, Operation{OP_STORE, i})
-	op = append(op, d.right.Compile()...)
-	op = append(op, Operation{OP_DIVIDE, i})
-	return op
+	codes = append(codes, Operation{OP_STORE, i})
+	codes = append(codes, d.right.Compile()...)
+	codes = append(codes, Operation{OP_DIVIDE, i})
+	return codes
 }
 
 func (d *Division) String(ident int) string {
 	identStr := strings.Repeat(" ", ident)
 	return fmt.Sprint(identStr, "/\n ", identStr, d.left.String(ident+1), "\n ", identStr, d.right.String(ident+1))
+}
+
+type Unary struct {
+	token Token
+	right Node
+}
+
+func (u *Unary) Compile() []Operation {
+	codes := u.right.Compile()
+	codes = append(codes, Operation{Code: OP_NEG})
+	return codes
+}
+
+func (u *Unary) String(ident int) string {
+	identStr := strings.Repeat(" ", ident)
+	return fmt.Sprint(identStr, "/\n ", identStr, "-", u.right.String(ident+1))
 }
