@@ -1,9 +1,9 @@
 package main
 
 func Compile(n []Node) []Operation {
-	r := make([]Operation, 0)
-	for _, c := range n {
-		r = append(r, c.Compile()...)
+	o := make([]Operation, 0)
+	for _, node := range n {
+		o = append(o, node.Compile()...)
 	}
-	return r
+	return o
 }

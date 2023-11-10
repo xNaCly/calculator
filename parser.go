@@ -1,16 +1,21 @@
 package main
 
-import "log"
+import (
+	"log"
+	"strings"
+)
 
 // Grammar:
-// expression ::= additive-expression
-// additive-expression ::= multiplicative-expression ( ( '+' | '-' ) multiplicative-expression ) *
-// multiplicative-expression ::= primary ( ( '*' | '/' ) primary ) *
-// primary ::= NUMBER
+// expression ::= term
+// term       ::= factor ( ( '+' | '-' ) factor ) *
+// factor     ::= unary ( ( '*' | '/' ) unary ) *
+// unary      ::= ('-') unary | primary
+// primary    ::= NUMBER | '(' expression ')'
 
 type Parser struct {
-	token []Token
-	pos   int
+	token    []Token
+	pos      int
+	dbgDepth int
 }
 
 func NewParser(token []Token) *Parser {
@@ -21,96 +26,156 @@ func NewParser(token []Token) *Parser {
 	return p
 }
 
+func (p *Parser) debug(prefix string) {
+	log.Println(strings.Repeat(" ", p.dbgDepth), prefix, "\n", strings.Repeat(" ", p.dbgDepth), " ", TOKEN_LOOKUP[p.peek().Type])
+	p.dbgDepth++
+}
+
 func (p *Parser) Parse() []Node {
-	r := make([]Node, 0)
-	for p.peek().Type != TOKEN_EOF {
-		r = append(r, p.expression())
+	p.debug("Parse")
+	defer func() {
+		p.dbgDepth--
+	}()
+
+	o := make([]Node, 0)
+	for !p.atEnd() {
+		o = append(o, p.expression())
 	}
-	return r
+	return o
 }
 
 func (p *Parser) expression() Node {
-	return p.additiveExpression()
+	p.debug("expression")
+	defer func() {
+		p.dbgDepth--
+	}()
+	return p.term()
 }
 
-func (p *Parser) additiveExpression() Node {
-	lhs := p.multiplicativeExpression()
-	op := p.peek()
-	if p.matchT(op, TOKEN_PLUS, TOKEN_MINUS) {
-		p.advance()
-		if op.Type == TOKEN_PLUS {
-			return &Addition{
+func (p *Parser) term() Node {
+	p.debug("term")
+	defer func() {
+		p.dbgDepth--
+	}()
+	lhs := p.factor()
+
+	for p.match(TOKEN_MINUS, TOKEN_PLUS) {
+		op := p.previous()
+		rhs := p.factor()
+		if op.Type == TOKEN_MINUS {
+			lhs = &Subtraction{
 				token: op,
 				left:  lhs,
-				right: p.multiplicativeExpression(),
+				right: rhs,
 			}
-		} else if op.Type == TOKEN_MINUS {
-			return &Subtraction{
+		} else if op.Type == TOKEN_PLUS {
+			lhs = &Addition{
 				token: op,
 				left:  lhs,
-				right: p.multiplicativeExpression(),
+				right: rhs,
 			}
-		} else {
-			log.Panicf("Unexpected %q", TOKEN_LOOKUP[p.peek().Type])
 		}
 	}
+
 	return lhs
 }
 
-func (p *Parser) multiplicativeExpression() Node {
-	lhs := p.primary()
-	op := p.peek()
-	if p.matchT(op, TOKEN_ASTERISK, TOKEN_SLASH) {
-		p.advance()
-		if op.Type == TOKEN_ASTERISK {
-			return &Multiplication{
+func (p *Parser) factor() Node {
+	p.debug("factor")
+	defer func() {
+		p.dbgDepth--
+	}()
+	lhs := p.unary()
+
+	for p.match(TOKEN_MINUS, TOKEN_PLUS) {
+		op := p.previous()
+		rhs := p.unary()
+		if op.Type == TOKEN_SLASH {
+			lhs = &Division{
 				token: op,
 				left:  lhs,
-				right: p.primary(),
+				right: rhs,
 			}
-		} else if op.Type == TOKEN_SLASH {
-			return &Division{
+		} else if op.Type == TOKEN_ASTERISK {
+			lhs = &Multiplication{
 				token: op,
 				left:  lhs,
-				right: p.primary(),
+				right: rhs,
 			}
-		} else {
-			log.Panicf("Unexpected %q", TOKEN_LOOKUP[p.peek().Type])
 		}
 	}
+
 	return lhs
+}
+
+func (p *Parser) unary() Node {
+	p.debug("unary")
+	defer func() {
+		p.dbgDepth--
+	}()
+
+	if p.match(TOKEN_MINUS) {
+		op := p.previous()
+		right := p.unary()
+		return &Unary{token: op, right: right}
+	}
+
+	return p.primary()
 }
 
 func (p *Parser) primary() Node {
-	if !p.matchT(p.peek(), TOKEN_NUMBER) {
-		log.Panicf("Expected %q, got %q", TOKEN_LOOKUP[TOKEN_NUMBER], TOKEN_LOOKUP[p.peek().Type])
+	p.debug("primary")
+	defer func() {
+		p.dbgDepth--
+	}()
+	if p.match(TOKEN_NUMBER) {
+		op := p.previous()
+		return &Number{token: op}
 	}
-	op := p.peek()
-	p.advance()
-	return &Number{token: op}
+
+	panic("Expected expression")
 }
 
-func (p *Parser) matchT(t Token, tokenTypes ...int) bool {
+func (p *Parser) match(tokenTypes ...int) bool {
 	for _, tokenType := range tokenTypes {
-		if t.Type == tokenType {
+		if p.check(tokenType) {
+			p.advance()
 			return true
 		}
 	}
 	return false
 }
 
-func (p *Parser) peekEquals(tokenType int) bool {
+func (p *Parser) consume(tokenType int, error string) {
+	if p.check(tokenType) {
+		p.advance()
+		return
+	}
+	log.Panicf("Wanted %q, got %q: %s", TOKEN_LOOKUP[p.peek().Type], TOKEN_LOOKUP[tokenType], error)
+}
+
+func (p *Parser) check(tokenType int) bool {
+	if p.atEnd() {
+		return false
+	}
 	return p.peek().Type == tokenType
 }
 
-// get current rune
+func (p *Parser) advance() Token {
+	if !p.atEnd() {
+		p.pos++
+	}
+	return p.previous()
+}
+
+func (p *Parser) atEnd() bool {
+	return p.peek().Type == TOKEN_EOF
+}
+
 func (p *Parser) peek() Token {
 	return p.token[p.pos]
 }
 
-// advance cursor to the next token in the input
-func (p *Parser) advance() {
-	if p.peek().Type != TOKEN_EOF {
-		p.pos++
-	}
+func (p *Parser) previous() Token {
+	return p.token[p.pos-1]
 }
