@@ -39,9 +39,7 @@ type Operation struct {
 }
 
 // max amount of registers in virtual machine
-const REGISTER_COUNT int = 128
-
-var CUR_REG float64 = 1
+const REGISTER_COUNT int = 16
 
 // The virtual machine (VM) is a way to simulate the inner workings of a processor.
 //
@@ -119,7 +117,7 @@ func (vm *Vm) Execute() {
 	for !vm.atEnd {
 		cur := vm.cur()
 		if vm.trace {
-			fmt.Printf("%-10s %f\n", OP_LOOKUP[cur.Code], cur.Arg)
+			fmt.Printf("%-15s %.2f\n", OP_LOOKUP[cur.Code], cur.Arg)
 		}
 
 		switch cur.Code {

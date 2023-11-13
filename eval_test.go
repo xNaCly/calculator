@@ -2,6 +2,7 @@ package main
 
 import (
 	"math"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -34,7 +35,8 @@ func TestEval(t *testing.T) {
 		{
 			name: "2+2",
 			in: []Node{
-				&Addition{
+				&Binary{
+					token: Token{Type: TOKEN_PLUS},
 					left:  &Number{token: Token{Raw: "2"}},
 					right: &Number{token: Token{Raw: "2"}},
 				},
@@ -44,7 +46,8 @@ func TestEval(t *testing.T) {
 		{
 			name: "2-2",
 			in: []Node{
-				&Subtraction{
+				&Binary{
+					token: Token{Type: TOKEN_MINUS},
 					left:  &Number{token: Token{Raw: "2"}},
 					right: &Number{token: Token{Raw: "2"}},
 				},
@@ -54,7 +57,8 @@ func TestEval(t *testing.T) {
 		{
 			name: "2*2",
 			in: []Node{
-				&Multiplication{
+				&Binary{
+					token: Token{Type: TOKEN_ASTERISK},
 					left:  &Number{token: Token{Raw: "2"}},
 					right: &Number{token: Token{Raw: "2"}},
 				},
@@ -64,7 +68,8 @@ func TestEval(t *testing.T) {
 		{
 			name: "2/2",
 			in: []Node{
-				&Division{
+				&Binary{
+					token: Token{Type: TOKEN_SLASH},
 					left:  &Number{token: Token{Raw: "2"}},
 					right: &Number{token: Token{Raw: "2"}},
 				},
@@ -74,8 +79,10 @@ func TestEval(t *testing.T) {
 		{
 			name: "1.025*3+1",
 			in: []Node{
-				&Addition{
-					left: &Multiplication{
+				&Binary{
+					token: Token{Type: TOKEN_PLUS},
+					left: &Binary{
+						token: Token{Type: TOKEN_ASTERISK},
 						left:  &Number{token: Token{Raw: "1.025"}},
 						right: &Number{token: Token{Raw: "3"}},
 					},
@@ -87,8 +94,10 @@ func TestEval(t *testing.T) {
 		{
 			name: "2*2+2",
 			in: []Node{
-				&Addition{
-					left: &Multiplication{
+				&Binary{
+					token: Token{Type: TOKEN_PLUS},
+					left: &Binary{
+						token: Token{Type: TOKEN_ASTERISK},
 						left:  &Number{token: Token{Raw: "2"}},
 						right: &Number{token: Token{Raw: "2"}},
 					},
@@ -100,9 +109,12 @@ func TestEval(t *testing.T) {
 		{
 			name: "2*2*2+2",
 			in: []Node{
-				&Addition{
-					left: &Multiplication{
-						left: &Multiplication{
+				&Binary{
+					token: Token{Type: TOKEN_PLUS},
+					left: &Binary{
+						token: Token{Type: TOKEN_ASTERISK},
+						left: &Binary{
+							token: Token{Type: TOKEN_ASTERISK},
 							left:  &Number{token: Token{Raw: "2"}},
 							right: &Number{token: Token{Raw: "2"}},
 						},
@@ -116,12 +128,18 @@ func TestEval(t *testing.T) {
 		{
 			name: "2*2*2*2*2*2+2",
 			in: []Node{
-				&Addition{
-					left: &Multiplication{
-						left: &Multiplication{
-							left: &Multiplication{
-								left: &Multiplication{
-									left: &Multiplication{
+				&Binary{
+					token: Token{Type: TOKEN_PLUS},
+					left: &Binary{
+						token: Token{Type: TOKEN_ASTERISK},
+						left: &Binary{
+							token: Token{Type: TOKEN_ASTERISK},
+							left: &Binary{
+								token: Token{Type: TOKEN_ASTERISK},
+								left: &Binary{
+									token: Token{Type: TOKEN_ASTERISK},
+									left: &Binary{
+										token: Token{Type: TOKEN_ASTERISK},
 										left:  &Number{token: Token{Raw: "2"}},
 										right: &Number{token: Token{Raw: "2"}},
 									},
@@ -141,8 +159,10 @@ func TestEval(t *testing.T) {
 		{
 			name: "readme example",
 			in: []Node{
-				&Addition{
-					left: &Multiplication{
+				&Binary{
+					token: Token{Type: TOKEN_PLUS},
+					left: &Binary{
+						token: Token{Type: TOKEN_ASTERISK},
 						left:  &Number{token: Token{Raw: "2"}},
 						right: &Number{token: Token{Raw: "1"}},
 					},
@@ -162,26 +182,26 @@ func TestEval(t *testing.T) {
 	}
 }
 
-// func TestCompile(t *testing.T) {
-// 	tests := []struct {
-// 		In  string
-// 		Out []Operation
-// 	}{
-// 		{In: "2+1*1", Out: []Operation{
-// 			{OP_LOAD, 2},
-// 			{OP_STORE, 1},
-// 			{OP_LOAD, 1},
-// 			{OP_STORE, 2},
-// 			{OP_LOAD, 1},
-// 			{OP_MULTIPY, 2},
-// 			{OP_ADD, 1},
-// 		}},
-// 	}
-// 	for _, test := range tests {
-// 		t.Run(test.In, func(t *testing.T) {
-// 			token := NewLexer(strings.NewReader(test.In)).Lex()
-// 			ast := NewParser(token).Parse()
-// 			assert.EqualValues(t, test.Out, Compile(ast))
-// 		})
-// 	}
-// }
+func TestCompile(t *testing.T) {
+	tests := []struct {
+		In  string
+		Out []Operation
+	}{
+		{In: "2+1*1", Out: []Operation{
+			{OP_LOAD, 2},
+			{OP_STORE, 1},
+			{OP_LOAD, 1},
+			{OP_STORE, 2},
+			{OP_LOAD, 1},
+			{OP_MULTIPY, 2},
+			{OP_ADD, 1},
+		}},
+	}
+	for _, test := range tests {
+		t.Run(test.In, func(t *testing.T) {
+			token := NewLexer(strings.NewReader(test.In)).Lex()
+			ast := NewParser(token).Parse()
+			assert.EqualValues(t, test.Out, Compile(ast))
+		})
+	}
+}

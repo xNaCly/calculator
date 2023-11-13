@@ -53,87 +53,40 @@ func (n *Number) String(ident int) string {
 	return fmt.Sprint(strings.Repeat(" ", ident), n.token.Raw)
 }
 
-type Addition struct {
+type Binary struct {
 	token Token
 	left  Node
 	right Node
 }
 
-func (a *Addition) Compile() []Operation {
-	codes := a.left.Compile()
+func (b *Binary) Compile() []Operation {
+	codes := b.left.Compile()
 	i := Allocator.alloc()
 	defer Allocator.dealloc(i)
 	codes = append(codes, Operation{OP_STORE, i})
-	codes = append(codes, a.right.Compile()...)
-	codes = append(codes, Operation{OP_ADD, i})
+	codes = append(codes, b.right.Compile()...)
+
+	operation := OP_NOP
+	switch b.token.Type {
+	case TOKEN_PLUS:
+		operation = OP_ADD
+	case TOKEN_MINUS:
+		operation = OP_SUBTRACT
+	case TOKEN_SLASH:
+		operation = OP_DIVIDE
+	case TOKEN_ASTERISK:
+		operation = OP_MULTIPY
+	default:
+		panic("Unknown type")
+	}
+
+	codes = append(codes, Operation{operation, i})
 	return codes
 }
 
-func (a *Addition) String(ident int) string {
+func (b *Binary) String(ident int) string {
 	identStr := strings.Repeat(" ", ident)
-	return fmt.Sprint(identStr, "+\n ", identStr, a.left.String(ident+1), "\n ", identStr, a.right.String(ident+1))
-}
-
-type Subtraction struct {
-	token Token
-	left  Node
-	right Node
-}
-
-func (s *Subtraction) Compile() []Operation {
-	codes := s.left.Compile()
-	i := Allocator.alloc()
-	defer Allocator.dealloc(i)
-	codes = append(codes, Operation{OP_STORE, i})
-	codes = append(codes, s.right.Compile()...)
-	codes = append(codes, Operation{OP_SUBTRACT, i})
-	return codes
-}
-
-func (s *Subtraction) String(ident int) string {
-	identStr := strings.Repeat(" ", ident)
-	return fmt.Sprint(identStr, "-\n ", identStr, s.left.String(ident+1), "\n ", identStr, s.right.String(ident+1))
-}
-
-type Multiplication struct {
-	token Token
-	left  Node
-	right Node
-}
-
-func (m *Multiplication) Compile() []Operation {
-	codes := m.left.Compile()
-	i := Allocator.alloc()
-	defer Allocator.dealloc(i)
-	codes = append(codes, Operation{OP_STORE, i})
-	codes = append(codes, m.right.Compile()...)
-	codes = append(codes, Operation{OP_MULTIPY, i})
-	return codes
-}
-func (m *Multiplication) String(ident int) string {
-	identStr := strings.Repeat(" ", ident)
-	return fmt.Sprint(identStr, "*\n ", identStr, m.left.String(ident+1), "\n ", identStr, m.right.String(ident+1))
-}
-
-type Division struct {
-	token Token
-	left  Node
-	right Node
-}
-
-func (d *Division) Compile() []Operation {
-	codes := d.left.Compile()
-	i := Allocator.alloc()
-	defer Allocator.dealloc(i)
-	codes = append(codes, Operation{OP_STORE, i})
-	codes = append(codes, d.right.Compile()...)
-	codes = append(codes, Operation{OP_DIVIDE, i})
-	return codes
-}
-
-func (d *Division) String(ident int) string {
-	identStr := strings.Repeat(" ", ident)
-	return fmt.Sprint(identStr, "/\n ", identStr, d.left.String(ident+1), "\n ", identStr, d.right.String(ident+1))
+	return fmt.Sprint(identStr, b.token.Raw, "\n ", identStr, b.left.String(ident+1), "\n ", identStr, b.right.String(ident+1))
 }
 
 type Unary struct {

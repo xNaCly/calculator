@@ -2,7 +2,6 @@ package main
 
 import (
 	"log"
-	"strings"
 )
 
 // Grammar:
@@ -13,9 +12,8 @@ import (
 // primary    ::= NUMBER | '(' expression ')'
 
 type Parser struct {
-	token    []Token
-	pos      int
-	dbgDepth int
+	token []Token
+	pos   int
 }
 
 func NewParser(token []Token) *Parser {
@@ -26,17 +24,7 @@ func NewParser(token []Token) *Parser {
 	return p
 }
 
-func (p *Parser) debug(prefix string) {
-	log.Println(strings.Repeat(" ", p.dbgDepth), prefix, "\n", strings.Repeat(" ", p.dbgDepth), " ", TOKEN_LOOKUP[p.peek().Type])
-	p.dbgDepth++
-}
-
 func (p *Parser) Parse() []Node {
-	p.debug("Parse")
-	defer func() {
-		p.dbgDepth--
-	}()
-
 	o := make([]Node, 0)
 	for !p.atEnd() {
 		o = append(o, p.expression())
@@ -45,35 +33,19 @@ func (p *Parser) Parse() []Node {
 }
 
 func (p *Parser) expression() Node {
-	p.debug("expression")
-	defer func() {
-		p.dbgDepth--
-	}()
 	return p.term()
 }
 
 func (p *Parser) term() Node {
-	p.debug("term")
-	defer func() {
-		p.dbgDepth--
-	}()
 	lhs := p.factor()
 
 	for p.match(TOKEN_MINUS, TOKEN_PLUS) {
 		op := p.previous()
 		rhs := p.factor()
-		if op.Type == TOKEN_MINUS {
-			lhs = &Subtraction{
-				token: op,
-				left:  lhs,
-				right: rhs,
-			}
-		} else if op.Type == TOKEN_PLUS {
-			lhs = &Addition{
-				token: op,
-				left:  lhs,
-				right: rhs,
-			}
+		lhs = &Binary{
+			token: op,
+			left:  lhs,
+			right: rhs,
 		}
 	}
 
@@ -81,27 +53,15 @@ func (p *Parser) term() Node {
 }
 
 func (p *Parser) factor() Node {
-	p.debug("factor")
-	defer func() {
-		p.dbgDepth--
-	}()
 	lhs := p.unary()
 
-	for p.match(TOKEN_MINUS, TOKEN_PLUS) {
+	for p.match(TOKEN_SLASH, TOKEN_ASTERISK) {
 		op := p.previous()
 		rhs := p.unary()
-		if op.Type == TOKEN_SLASH {
-			lhs = &Division{
-				token: op,
-				left:  lhs,
-				right: rhs,
-			}
-		} else if op.Type == TOKEN_ASTERISK {
-			lhs = &Multiplication{
-				token: op,
-				left:  lhs,
-				right: rhs,
-			}
+		lhs = &Binary{
+			token: op,
+			left:  lhs,
+			right: rhs,
 		}
 	}
 
@@ -109,11 +69,6 @@ func (p *Parser) factor() Node {
 }
 
 func (p *Parser) unary() Node {
-	p.debug("unary")
-	defer func() {
-		p.dbgDepth--
-	}()
-
 	if p.match(TOKEN_MINUS) {
 		op := p.previous()
 		right := p.unary()
@@ -124,13 +79,13 @@ func (p *Parser) unary() Node {
 }
 
 func (p *Parser) primary() Node {
-	p.debug("primary")
-	defer func() {
-		p.dbgDepth--
-	}()
 	if p.match(TOKEN_NUMBER) {
 		op := p.previous()
 		return &Number{token: op}
+	} else if p.match(TOKEN_BRACE_LEFT) {
+		node := p.expression()
+		p.consume(TOKEN_BRACE_RIGHT, "Expected '('")
+		return node
 	}
 
 	panic("Expected expression")
